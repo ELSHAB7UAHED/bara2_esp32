@@ -1,0 +1,88 @@
+name: Build ESP32 Firmware
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        target: [esp32dev, esp32-c3, esp32-s3]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install PlatformIO Core
+      run: pip install platformio
+      
+    - name: Build for ${{ matrix.target }}
+      run: |
+        pio run --environment ${{ matrix.target }}
+        
+    - name: Archive binaries
+      uses: actions/upload-artifact@v3
+      with:
+        name: firmware-${{ matrix.target }}
+        path: .pio/build/${{ matrix.target }}/*.bin
+        
+    - name: Upload binaries to release
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          .pio/build/${{ matrix.target }}/*.bin
+          .pio/build/${{ matrix.target }}/*.elf
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Create a new GitHub Release when pushing to main
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Generate changelog
+      id: changelog
+      run: |
+        echo "## Changes in $(date +%Y-%m-%d)" > CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        git log --oneline --since="1 week ago" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "## Hardware Support" >> CHANGELOG.md
+        echo "- ESP32 DevKit" >> CHANGELOG.md
+        echo "- ESP32-C3" >> CHANGELOG.md
+        echo "- ESP32-S3" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "## Build Information" >> CHANGELOG.md
+        echo "- Build Date: $(date)" >> CHANGELOG.md
+        echo "- PlatformIO Version: $(pio --version)" >> CHANGELOG.md
+        echo "- Commit: ${GITHUB_SHA}" >> CHANGELOG.md
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v$(date +%Y.%m.%d)
+        release_name: ESP32 Bara2 Firmware - $(date +%Y-%m-%d)
+        body_path: CHANGELOG.md
+        draft: false
+        prerelease: false
