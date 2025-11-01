@@ -1,0 +1,83 @@
+# Dependencies
+.pio/libdeps/
+.pio/build/
+.pio/workspace/
+
+# PlatformIO Core
+.pio/
+
+# Arduino IDE
+.ino.standardized.cpp
+
+# PlatformIO IDE
+.vscode/
+.idea/
+*.iml
+
+# Eclipse CDT
+.cproject/
+.project/
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+
+# Editor backups
+*~
+*.bak
+*.orig
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# PlatformIO log files
+.pio/logs/
+
+# Serial Monitor log
+.pio/logs/pio-device-monitor.log
+
+# Custom build output
+firmware/
+binaries/
+releases/
+
+# IDE files
+*.tmp
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Cache
+.cache/
+.parcel-cache/
